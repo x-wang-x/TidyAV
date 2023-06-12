@@ -11,6 +11,30 @@ class FileOP:
     def OpenFolder():
         return fd.askdirectory()
 
+    def writeFile(file, data):
+        try:
+            with open(file, 'w') as f:
+                f.write(data)
+        except Exception as e:
+            print('Error writing file : ', e)
+
+    def readFile(file):
+        if not os.path.isfile(file):
+            return []
+        try:
+            with open(file, 'r') as f:
+                return json.load(f)
+        except Exception as e:
+            print('Error reading file : ', e)
+
+    def deleteFile(file):
+        if not os.path.isfile(file):
+            return
+        try:
+            os.remove(file)
+        except Exception as e:
+            print('Error deleting file : ', e)
+
     def readConfig(key):
         try:
             with open('config.txt') as f:
@@ -34,7 +58,6 @@ class FileOP:
         if recursive:
             for r, d, f in os.walk(dir):
                 idx = 0
-                time.sleep(0.5)
                 for file in f:
                     idx += 1
                     # send Update Progress Callback
@@ -56,7 +79,6 @@ class FileOP:
                             # normalize to path and write to res
                             res = os.path.normpath(os.path.join(dir, file))
                             addListFunc(res)
-
         updateFunc(0, 0, "Done")
 
 
@@ -77,50 +99,124 @@ class ProgressBar(customtkinter.CTkFrame):
         return self.progress.get()
 
 
-class ScrollableLabelButtonFrame(customtkinter.CTkScrollableFrame):
+class ScrollableCheckBoxFrame(customtkinter.CTkScrollableFrame):
     def __init__(self, master, command=None, **kwargs):
         super().__init__(master, **kwargs)
-        self.grid_columnconfigure(0, weight=1)
 
         self.command = command
-        self.radiobutton_variable = customtkinter.StringVar()
-        self.label_list = []
-        self.button_list = []
+        self.checkbox_list = []
 
-    def add_item(self, item, image=None):
-        label = customtkinter.CTkLabel(
-            self, text=item, image=image, compound="left", padx=5, anchor="w")
-        button = customtkinter.CTkButton(
-            self, text="V", width=100, height=24)
+    def add_item(self, item):
+        checkbox = customtkinter.CTkCheckBox(self, text=item)
         if self.command is not None:
-            button.configure(command=lambda: self.command(item))
-        label.grid(row=len(self.label_list),
-                   column=0, pady=(0, 10), sticky="w")
-        button.grid(row=len(self.button_list), column=1, pady=(0, 10), padx=5)
-        self.label_list.append(label)
-        self.button_list.append(button)
+            checkbox.configure(command=self.command)
+        checkbox.grid(row=len(self.checkbox_list),
+                      column=0, pady=(0, 10), sticky="w")
+        self.checkbox_list.append(checkbox)
 
     def remove_item(self, item):
-        for label, button in zip(self.label_list, self.button_list):
-            if item == label.cget("text"):
-                label.destroy()
-                button.destroy()
-                self.label_list.remove(label)
-                self.button_list.remove(button)
+        for checkbox in self.checkbox_list:
+            if item == checkbox.cget("text"):
+                checkbox.destroy()
+                self.checkbox_list.remove(checkbox)
                 return
 
+    def select_all(self):
+        for checkbox in self.checkbox_list:
+            checkbox.select()
+
+    def deselect_all(self):
+        for checkbox in self.checkbox_list:
+            checkbox.deselect()
+
     def clear(self):
-        for label, button in zip(self.label_list, self.button_list):
-            label.destroy()
-            button.destroy()
-        self.label_list = []
-        self.button_list = []
+        for checkbox in self.checkbox_list:
+            checkbox.destroy()
+        self.checkbox_list = []
+
+    def get_checked_items(self):
+        return [checkbox.cget("text") for checkbox in self.checkbox_list if checkbox.get() == 1]
+
+
+class ListFrame(customtkinter.CTkFrame):
+    def __init__(self, master):
+        super().__init__(master)
+        self.grid_columnconfigure(0, weight=1)
+        # create select all checkbox
+        self.check_var = customtkinter.StringVar(value="off")
+        checkbox = customtkinter.CTkCheckBox(self, text="Select All", command=self.checkbox_event,
+                                             variable=self.check_var, onvalue="on", offvalue="off")
+        checkbox.grid(row=0, column=0, padx=15, pady=15, sticky="w")
+        # create scrollable checkbox frame
+        self.scrollable_checkbox_frame = ScrollableCheckBoxFrame(
+            self, width=350, height=400, command=self.checkbox_frame_event)
+        self.scrollable_checkbox_frame.grid(
+            row=1, column=0, padx=15, pady=0, sticky="nsew", columnspan=3)
+        # create rename button
+        self.renameBtn = customtkinter.CTkButton(
+            self, text="Rename", command=self.rename, state="disabled")
+        self.renameBtn.grid(row=0, column=1, padx=15, pady=15, sticky="w")
+        # create move button
+        self.moveBtn = customtkinter.CTkButton(
+            self, text="Move", command=self.move, state="disabled")
+        self.moveBtn.grid(row=0, column=2, padx=15, pady=15, sticky="w")
+
+    def rename(self):
+        print(
+            f"checkbox frame modified: {self.scrollable_checkbox_frame.get_checked_items()}")
+
+    def move(self):
+        pass
+
+    def checkbox_event(self):
+        if (self.check_var.get() == "on"):
+            self.scrollable_checkbox_frame.select_all()
+        else:
+            self.scrollable_checkbox_frame.deselect_all()
+
+    def checkbox_frame_event(self):
+        if (len(self.scrollable_checkbox_frame.get_checked_items()) == 0):
+            self.renameBtn.configure(state="disabled")
+            self.moveBtn.configure(state="disabled")
+        else:
+            self.renameBtn.configure(state="normal")
+            self.moveBtn.configure(state="normal")
+
+    def clear(self):
+        self.scrollable_checkbox_frame.clear()
+
+    def Load(self):
+        self.clear()
+        for x in LoadData().get():
+            self.scrollable_checkbox_frame.add_item(x)
+
+
+class LoadData():
+    def __init__(self):
+        self.data = []
+        for i in FileOP.readFile("d_list"):
+            self.data.append(i)
+
+    def add(self, item):
+        self.data.append(item)
+
+    def get(self):
+        return self.data
+
+    def clear(self):
+        self.data = []
+
+    def remove(self, item):
+        self.data.remove(item)
 
 
 class ScanSceneFrame(customtkinter.CTkFrame):
 
     def __init__(self, master):
         super().__init__(master)
+
+        self.list = []
+
         self.progress_bar = ProgressBar(self)
         self.progress_bar.grid(
             row=0, column=0, padx=10, pady=10, sticky="w")
@@ -134,26 +230,25 @@ class ScanSceneFrame(customtkinter.CTkFrame):
         self.percentage_txt = customtkinter.CTkLabel(
             self, text="0%", fg_color="transparent")
         self.percentage_txt.grid(row=0, column=1, padx=10, pady=10, sticky="w")
+
         self.folder_txt = customtkinter.CTkLabel(
             self, text="Current working on : -", fg_color="transparent", wraplength=200)
         self.folder_txt.grid(row=1, column=0, padx=10, pady=10, sticky="w")
 
-        self.scrollable_label_button_frame = ScrollableLabelButtonFrame(
-            master=self, width=300, command=self.label_button_frame_event, corner_radius=0)
-        self.scrollable_label_button_frame.grid(
-            row=2, column=0, padx=0, pady=0, sticky="nsew")
-
     def Scan(self):
+        self.list = []
+        FileOP.deleteFile("d_list")
         path = FileOP.readConfig("scan")
         msg_box = messagebox.askquestion('Scan folder', f'Start scanning {path} ?',
                                          icon='warning')
         if msg_box == 'yes':
-            self.scrollable_label_button_frame.clear()
             if (path != None and os.path.isdir(path)):
-                FileOP.ScanFile(path, True, self.Update,
+                FileOP.ScanFile(path, False, self.Update,
                                 self.Add)
             else:
                 messagebox.showerror("Error", "Path not valid")
+
+        self.master.listx.Load()
 
     def Update(self, range, idx, folder):
         # update folder text
@@ -179,10 +274,8 @@ class ScanSceneFrame(customtkinter.CTkFrame):
             progress_step = 0
 
     def Add(self, value):
-        self.scrollable_label_button_frame.add_item(value)
-
-    def label_button_frame_event(self, item):
-        print(f"label button frame clicked: {item}")
+        self.list.append(value)
+        FileOP.writeFile('d_list', json.dumps(self.list))
 
 
 class BrowseFrame(customtkinter.CTkFrame):
@@ -218,20 +311,19 @@ class App(customtkinter.CTk):
         self.title("my app")
         self.geometry("1280x720")
         self.grid_columnconfigure(0, weight=1)
-        self.grid_rowconfigure(1, weight=1)
+        # self.grid_rowconfigure(1, weight=1)
 
         self.browse_frame = BrowseFrame(self)
         self.browse_frame.grid(
             row=0, column=0, padx=10, pady=10, sticky="nsw")
 
-        self.a = ScanSceneFrame(self)
-        self.a.grid(
+        self.scanScene = ScanSceneFrame(self)
+        self.scanScene.grid(
             row=1, column=0, padx=10, pady=10, sticky="nsw")
 
-        # self.scrollable_label_button_frame = ScrollableLabelButtonFrame(self)
-        # self.scrollable_label_button_frame.grid(
-        #     row=3, column=0, padx=10, pady=10, sticky="nsw")
-
+        self.listx = ListFrame(self)
+        self.listx.grid(
+            row=2, column=0, padx=10, pady=10, sticky="nsw")
         # # create scrollable label and button frame
         # current_dir = os.path.dirname(os.path.abspath(__file__))
 

@@ -154,3 +154,4 @@ cython_debug/
 tes.py
 .vscode/settings.json
 config.txt
+d_*
