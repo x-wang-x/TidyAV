@@ -144,9 +144,9 @@ class ListFrame(customtkinter.CTkFrame):
         self.grid_columnconfigure(0, weight=1)
         # create select all checkbox
         self.check_var = customtkinter.StringVar(value="off")
-        checkbox = customtkinter.CTkCheckBox(self, text="Select All", command=self.checkbox_event,
-                                             variable=self.check_var, onvalue="on", offvalue="off")
-        checkbox.grid(row=0, column=0, padx=15, pady=15, sticky="w")
+        self.checkbox = customtkinter.CTkCheckBox(self, text="Select All", command=self.checkbox_event,
+                                                  variable=self.check_var, onvalue="on", offvalue="off")
+        self.checkbox.grid(row=0, column=0, padx=15, pady=15, sticky="w")
         # create scrollable checkbox frame
         self.scrollable_checkbox_frame = ScrollableCheckBoxFrame(
             self, width=350, height=400, command=self.checkbox_frame_event)
@@ -169,18 +169,35 @@ class ListFrame(customtkinter.CTkFrame):
         pass
 
     def checkbox_event(self):
+        # check if select all is checked, if so select all items
         if (self.check_var.get() == "on"):
             self.scrollable_checkbox_frame.select_all()
+            # check if list is empty, if so disable buttons
+            if (len(self.scrollable_checkbox_frame.get_checked_items()) == 0):
+                self.disableBtn(True)
+                return
+            self.disableBtn(False)
+        # check if select all is unchecked, if so deselect all items
         else:
             self.scrollable_checkbox_frame.deselect_all()
+            self.disableBtn(True)
 
-    def checkbox_frame_event(self):
-        if (len(self.scrollable_checkbox_frame.get_checked_items()) == 0):
+    def disableBtn(self, btn):
+        # disable buttons if True, enable if False
+        if btn:
             self.renameBtn.configure(state="disabled")
             self.moveBtn.configure(state="disabled")
         else:
             self.renameBtn.configure(state="normal")
             self.moveBtn.configure(state="normal")
+
+    def checkbox_frame_event(self):
+        # check if list is empty, if so disable buttons and deselect select all checkbox
+        if (len(self.scrollable_checkbox_frame.get_checked_items()) == 0):
+            self.checkbox.deselect()
+            self.disableBtn(True)
+        else:
+            self.disableBtn(False)
 
     def clear(self):
         self.scrollable_checkbox_frame.clear()
