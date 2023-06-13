@@ -6,6 +6,7 @@ import os
 import time
 import json
 import re
+import shutil
 
 
 class FileOP:
@@ -56,6 +57,7 @@ class FileOP:
     def ScanFile(dir, recursive, updateFunc, addListFunc):
         types = ('.mp4', '.mkv', '.ts', '.avi')
         idx = 0
+
         if recursive:
             for r, d, f in os.walk(dir):
                 idx = 0
@@ -93,6 +95,19 @@ class FileOP:
                 return i[1]
             # print(i[1])
         return None
+
+    def Mover(_from, _to):
+        # Create dir if not exist
+        if not os.path.exists(os.path.dirname(_to)):
+            try:
+                os.makedirs(os.path.dirname(_to), exist_ok=True)
+            except Exception as error:
+                print(error)
+        try:
+            shutil.move(_from, _to)  # moving
+            # os.rename(from_, to_) #do rename / move (only in same disk)
+        except Exception as e:
+            print(e)
 
 
 class ProgressBar(customtkinter.CTkFrame):
@@ -156,6 +171,24 @@ class ScrollableCheckBoxFrame(customtkinter.CTkScrollableFrame):
     def get_checked_items(self):
         return [checkbox.cget("text") for checkbox in self.checkbox_list if checkbox.get() == 1]
 
+    def get_all_items(self):
+        return [checkbox.cget("text") for checkbox in self.checkbox_list]
+
+
+class BoxFrame():
+
+    def show(type, message_txt):
+        return messagebox.showinfo(type, message_txt)
+
+    def error(type, message_txt):
+        return messagebox.showerror(type, message_txt)
+
+    def question(type, message_txt):
+        return messagebox.askquestion(type, message_txt)
+
+    def warning(type, message_txt):
+        return messagebox.showwarning(type, message_txt)
+
 
 class ListFrame(customtkinter.CTkFrame):
     def __init__(self, master):
@@ -179,9 +212,17 @@ class ListFrame(customtkinter.CTkFrame):
         self.moveBtn = customtkinter.CTkButton(
             self, text="Move", command=self.move, state="disabled")
         self.moveBtn.grid(row=0, column=2, padx=15, pady=15, sticky="w")
+        # create apply button
+        self.applyBtn = customtkinter.CTkButton(
+            self, text="Apply", command=self.apply, state="disabled")
+        self.applyBtn.grid(row=2, column=2, padx=15, pady=15, sticky="w")
 
     def rename(self):
         self.disableBtn(True)
+        leak_worlist = ['Leak', 'Leaked']
+        demosaic_wordlist = ['Demosaic', 'Demosaiced',
+                             'Decensored', 'Decensor', 'Mosaic', 'Remove', 'Removed']
+        subbed_worldlist = ['Subbed', 'Sub', 'Subtitle', 'Subtitle', 'English']
         try:
             for x in self.scrollable_checkbox_frame.get_checked_items():
                 # head for dir and tail for filename
@@ -203,24 +244,59 @@ class ListFrame(customtkinter.CTkFrame):
                         part = "[Part "+str(part.group())+"]"
                     else:
                         part = ""
+
                     # leaked tag
-                    if (tail.find('Leaked') != -1):
+                    if any(ele in tail for ele in leak_worlist):
                         leaked = '[Leaked]'
-                    elif (tail.find('Decensored') != -1 or tail.find('Reduce') != -1 or tail.find('Removed') != -1 or tail.find('Mosaic') != -1):
+                    elif any(ele in tail for ele in demosaic_wordlist):
                         leaked = '[Decensored]'
                     else:
                         leaked = ''
-
+                    # subbed tag
+                    if any(ele in tail for ele in subbed_worldlist):
+                        subbed = "[Subbed]"
+                    else:
+                        subbed = ''
                     ori_path = os.path.normpath(x)
                     new_path = os.path.normpath(
-                        head+"/["+filename+']'+part+leaked+ext)
+                        head+"/["+filename+']'+part+leaked+subbed+ext)
                     # print([ori_path, new_path])
                     self.scrollable_checkbox_frame.edit_item(
                         x, new_path)
                     self.update_idletasks()
+
         except Exception as e:
             print(e)
         self.disableBtn(False)
+
+    def apply(self):
+
+        # get all items from list
+        _from = LoadData().get()
+        # changes items from list
+        _to = self.scrollable_checkbox_frame.get_all_items()
+        _do = []
+        for x in range(len(_from)):
+            # if something changed
+            if _from[x] != _to[x]:
+                _do.append([_from[x], _to[x]])
+        # clear list box
+        total_changes = len(_do)
+        if (total_changes != 0):
+            # show confirmation dialog
+            msg_box = BoxFrame.question(
+                "Confirmation", f"Apply changes to {total_changes} item(s) ? (Can't be undone)")
+            if msg_box == 'yes':
+                for x in range(total_changes):
+                    FileOP.Mover(_do[x][0], _do[x][1])
+                time.sleep(0.5)
+                BoxFrame.show("Success", "Changes applied")
+                # clear list box
+                self.disableBtn(True)
+                self.scrollable_checkbox_frame.clear()
+
+        else:
+            BoxFrame.warning("Warning", "No changes detected")
 
     def move(self):
         pass
@@ -244,9 +320,11 @@ class ListFrame(customtkinter.CTkFrame):
         if btn:
             self.renameBtn.configure(state="disabled")
             self.moveBtn.configure(state="disabled")
+            self.applyBtn.configure(state="disabled")
         else:
             self.renameBtn.configure(state="normal")
             self.moveBtn.configure(state="normal")
+            self.applyBtn.configure(state="normal")
 
     def checkbox_frame_event(self):
         # check if list is empty, if so disable buttons and deselect select all checkbox
@@ -313,21 +391,21 @@ class ScanSceneFrame(customtkinter.CTkFrame):
         self.list = []
         FileOP.deleteFile("d_list")
         path = FileOP.readConfig("scan")
-        msg_box = messagebox.askquestion('Scan folder', f'Start scanning {path} ?',
-                                         icon='warning')
+        msg_box = BoxFrame.question(
+            "Confirmation", f"Scan all files in folder {path}?")
         if msg_box == 'yes':
             if (path != None and os.path.isdir(path)):
                 FileOP.ScanFile(path, False, self.Update,
                                 self.Add)
+                self.folder_txt.configure(text="Trying to detect AV Movies...")
+                self.update_idletasks()
+                time.sleep(1)
+                self.Detector()
+                self.folder_txt.configure(text="Done.")
+                self.master.listx.Load()
             else:
-                messagebox.showerror("Error", "Path not valid")
-
-        self.folder_txt.configure(text="Trying to detect AV Movies...")
-        self.update_idletasks()
-        time.sleep(1)
-        self.Detector()
-        self.folder_txt.configure(text="Done.")
-        self.master.listx.Load()
+                BoxFrame.error("Error", "Invalid path")
+                return
 
     def Detector(self):
         self.result = []
