@@ -5,6 +5,7 @@ from tkinter import messagebox
 import os
 import time
 import json
+import re
 
 
 class FileOP:
@@ -81,6 +82,18 @@ class FileOP:
                             addListFunc(res)
         updateFunc(0, 0, "Done")
 
+    def Detector(file):
+        studio = FileOP.readFile('d_maker_list')
+        for i in studio:
+            # regex to parse code from file name
+            compare = re.search(
+                r"\b({}\W\d*)\b".format(i[1]), file, re.IGNORECASE)
+            if compare:
+                # append valid files to array:
+                return i[1]
+            # print(i[1])
+        return None
+
 
 class ProgressBar(customtkinter.CTkFrame):
     def __init__(self, master):
@@ -119,6 +132,12 @@ class ScrollableCheckBoxFrame(customtkinter.CTkScrollableFrame):
             if item == checkbox.cget("text"):
                 checkbox.destroy()
                 self.checkbox_list.remove(checkbox)
+                return
+
+    def edit_item(self, item, new_item):
+        for checkbox in self.checkbox_list:
+            if item == checkbox.cget("text"):
+                checkbox.configure(text=new_item)
                 return
 
     def select_all(self):
@@ -162,8 +181,46 @@ class ListFrame(customtkinter.CTkFrame):
         self.moveBtn.grid(row=0, column=2, padx=15, pady=15, sticky="w")
 
     def rename(self):
-        print(
-            f"checkbox frame modified: {self.scrollable_checkbox_frame.get_checked_items()}")
+        self.disableBtn(True)
+        try:
+            for x in self.scrollable_checkbox_frame.get_checked_items():
+                # head for dir and tail for filename
+                head, tail = os.path.split(x)
+                code = FileOP.Detector(tail)
+                if code is not None:
+                    compare = re.search(
+                        r"\b({}\W\d*)\b".format(code), tail, re.IGNORECASE)  # parse to code
+                    # return filename only from regex
+                    filename = str(compare.group())
+                    ext = os.path.splitext(x)[1]
+                    # check if file have another tag
+                    # part tag
+                    parted = re.search(r"part.(\d)|part(\d)",
+                                       tail, re.IGNORECASE)
+                    if (parted != None):
+                        part = str(parted.group())
+                        part = re.search(r"\d+", part)
+                        part = "[Part "+str(part.group())+"]"
+                    else:
+                        part = ""
+                    # leaked tag
+                    if (tail.find('Leaked') != -1):
+                        leaked = '[Leaked]'
+                    elif (tail.find('Decensored') != -1 or tail.find('Reduce') != -1 or tail.find('Removed') != -1 or tail.find('Mosaic') != -1):
+                        leaked = '[Decensored]'
+                    else:
+                        leaked = ''
+
+                    ori_path = os.path.normpath(x)
+                    new_path = os.path.normpath(
+                        head+"/["+filename+']'+part+leaked+ext)
+                    # print([ori_path, new_path])
+                    self.scrollable_checkbox_frame.edit_item(
+                        x, new_path)
+                    self.update_idletasks()
+        except Exception as e:
+            print(e)
+        self.disableBtn(False)
 
     def move(self):
         pass
@@ -212,7 +269,7 @@ class LoadData():
     def __init__(self):
         self.data = []
         for i in FileOP.readFile("d_list"):
-            self.data.append(i)
+            self.data.append(i[1])
 
     def add(self, item):
         self.data.append(item)
@@ -265,7 +322,21 @@ class ScanSceneFrame(customtkinter.CTkFrame):
             else:
                 messagebox.showerror("Error", "Path not valid")
 
+        self.folder_txt.configure(text="Trying to detect AV Movies...")
+        self.update_idletasks()
+        time.sleep(1)
+        self.Detector()
+        self.folder_txt.configure(text="Done.")
         self.master.listx.Load()
+
+    def Detector(self):
+        self.result = []
+        item = FileOP.readFile("d_list")
+        for x in item:
+            code = FileOP.Detector(x)
+            if code != None:
+                self.result.append([code, x])
+        FileOP.writeFile('d_list', json.dumps(self.result))
 
     def Update(self, range, idx, folder):
         # update folder text
@@ -341,8 +412,6 @@ class App(customtkinter.CTk):
         self.listx = ListFrame(self)
         self.listx.grid(
             row=2, column=0, padx=10, pady=10, sticky="nsw")
-        # # create scrollable label and button frame
-        # current_dir = os.path.dirname(os.path.abspath(__file__))
 
 
 app = App()
