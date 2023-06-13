@@ -89,7 +89,7 @@ class FileOP:
         for i in studio:
             # regex to parse code from file name
             compare = re.search(
-                r"\b({}\W\d*)\b".format(i[1]), file, re.IGNORECASE)
+                r"\b({}.\d*)\b".format(i[1]), file, re.IGNORECASE)
             if compare:
                 # append valid files to array:
                 return i[1]
@@ -230,9 +230,11 @@ class ListFrame(customtkinter.CTkFrame):
                 code = FileOP.Detector(tail)
                 if code is not None:
                     compare = re.search(
-                        r"\b({}\W\d*)\b".format(code), tail, re.IGNORECASE)  # parse to code
+                        r"\b({}.\d+)".format(code), tail, re.IGNORECASE)  # parse to code
                     # return filename only from regex
-                    filename = str(compare.group())
+                    filename = tail
+                    if compare != None:
+                        filename = str(compare.group())
                     ext = os.path.splitext(x)[1]
                     # check if file have another tag
                     # part tag
