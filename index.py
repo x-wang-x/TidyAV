@@ -10,6 +10,9 @@ import shutil
 
 
 class FileOP:
+
+    config_file = "config.txt"
+
     def OpenFolder():
         return fd.askdirectory()
 
@@ -47,10 +50,14 @@ class FileOP:
             return None
 
     def writeConfig(key, value):
+        read = FileOP.readFile(FileOP.config_file)
+        if key in read:
+            read[key] = value
+        else:
+            read[key] = value
         try:
-            config = {key: value}
-            with open('config.txt', 'w') as f:
-                json.dump(config, f)
+            with open(FileOP.config_file, 'w') as f:
+                json.dump(read, f)
         except:
             print('Error writing config.txt')
 
@@ -193,7 +200,8 @@ class BoxFrame():
 class ListFrame(customtkinter.CTkFrame):
     def __init__(self, master):
         super().__init__(master)
-        self.grid_columnconfigure(0, weight=1)
+        self.grid_columnconfigure((0), weight=1)
+        self.grid_rowconfigure((1), weight=1)
         # create select all checkbox
         self.check_var = customtkinter.StringVar(value="off")
         self.checkbox = customtkinter.CTkCheckBox(self, text="Select All", command=self.checkbox_event,
@@ -472,26 +480,67 @@ class BrowseFrame(customtkinter.CTkFrame):
         FileOP.writeConfig("scan", self.box.get())
 
 
+class MyFrame(customtkinter.CTkFrame):
+    def __init__(self, master):
+        super().__init__(master)
+        self.label = customtkinter.CTkLabel(self, text="Setting")
+        self.label.grid(row=0, column=0, padx=10, pady=10, sticky="s")
+        self.appearance_mode_optionemenu = customtkinter.CTkOptionMenu(self, values=["System", "Dark", "Light"],
+                                                                       command=self.change_appearance_mode_event)
+        self.appearance_mode_optionemenu.grid(
+            row=1, column=0, padx=10, pady=10)
+        self.masterBtn = customtkinter.CTkButton(self, text="Master Folder",
+                                                 command=self.masterBtn)
+        self.masterBtn.grid(row=2, column=0, padx=10, pady=10)
+
+        self.databaseBtn = customtkinter.CTkButton(self, text="Database",
+                                                   command=self.databaseBtn)
+        self.databaseBtn.grid(row=3, column=0, padx=10, pady=10)
+
+    def change_appearance_mode_event(self, new_appearance_mode: str):
+        customtkinter.set_appearance_mode(new_appearance_mode)
+
+    def masterBtn(self):
+        # FileOP.writeConfig("master", dialog.get_input())
+        BoxFrame.show("Master Folder", "Please select your master folder")
+
+    def databaseBtn(self):
+        BoxFrame.show("Database", "Please select your database folder")
+
+
 class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
 
         self.title("my app")
         self.geometry("1280x720")
-        self.grid_columnconfigure(0, weight=1)
-        # self.grid_rowconfigure(1, weight=1)
+        self.grid_columnconfigure(1, weight=1)
+        self.grid_rowconfigure(3, weight=1)
+        self.resizable(False, False)
+        self.btn = customtkinter.CTkButton(
+            self, text="Setting", command=self.setting)
+        self.btn.grid(row=0, column=1, padx=10, pady=10, sticky="w")
 
         self.browse_frame = BrowseFrame(self)
         self.browse_frame.grid(
-            row=0, column=0, padx=10, pady=10, sticky="nsw")
+            row=1, column=1, padx=10, pady=10, sticky="nsw")
 
         self.scanScene = ScanSceneFrame(self)
         self.scanScene.grid(
-            row=1, column=0, padx=10, pady=10, sticky="nsw")
+            row=2, column=1, padx=10, pady=10, sticky="nsw")
 
         self.listx = ListFrame(self)
         self.listx.grid(
-            row=2, column=0, padx=10, pady=10, sticky="nsw")
+            row=3, column=1, padx=10, pady=10, sticky="nsw")
+
+        self.my_frame = MyFrame(master=self)
+
+    def setting(self):
+        if self.my_frame.grid_info() == {}:
+            self.my_frame.grid(row=1, column=0, padx=(10, 0),
+                               pady=10, sticky="nsw", rowspan=3)
+        else:
+            self.my_frame.grid_forget()
 
 
 app = App()
