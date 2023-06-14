@@ -480,7 +480,29 @@ class BrowseFrame(customtkinter.CTkFrame):
         FileOP.writeConfig("scan", self.box.get())
 
 
-class MyFrame(customtkinter.CTkFrame):
+class Database(customtkinter.CTkToplevel):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # create center window
+        screen_height = self.winfo_screenheight()
+        screen_width = self.winfo_screenwidth()
+
+        widget_height = 720
+        widget_width = 1080
+
+        pos_height = int(screen_height // 2 - widget_height // 2)
+        pos_width = int(screen_width // 2 - widget_width // 2)
+
+        self.geometry(
+            f"{widget_width}x{widget_height}+{pos_width}+{pos_height}")
+        self.wm_iconbitmap("icon.ico")
+        self.title("Database")
+
+        self.label = customtkinter.CTkLabel(self, text="Database")
+        self.label.pack(padx=20, pady=20)
+
+
+class SettingFrame(customtkinter.CTkFrame):
     def __init__(self, master):
         super().__init__(master)
         self.label = customtkinter.CTkLabel(self, text="Setting")
@@ -496,6 +518,7 @@ class MyFrame(customtkinter.CTkFrame):
         self.databaseBtn = customtkinter.CTkButton(self, text="Database",
                                                    command=self.databaseBtn)
         self.databaseBtn.grid(row=3, column=0, padx=10, pady=10)
+        self.db_windows = None
 
     def change_appearance_mode_event(self, new_appearance_mode: str):
         customtkinter.set_appearance_mode(new_appearance_mode)
@@ -505,15 +528,38 @@ class MyFrame(customtkinter.CTkFrame):
         BoxFrame.show("Master Folder", "Please select your master folder")
 
     def databaseBtn(self):
-        BoxFrame.show("Database", "Please select your database folder")
+        self.master.withdraw()
+        if self.db_windows is None or not self.db_windows.winfo_exists():
+            # create window if its None or destroyed
+            self.db_windows = Database(self)
+            self.db_windows.focus()  # focus on window
+        else:
+            self.db_windows.focus()  # if window exists focus it
+
+        self.db_windows.wait_window()  # wait for window to be destroyed
+        self.db_windows.destroy
+        self.master.deiconify()
 
 
 class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
 
-        self.title("my app")
-        self.geometry("1280x720")
+        self.title("TidyAV")
+        self.wm_iconbitmap("icon.ico")
+        # create center window
+        screen_height = self.winfo_screenheight()
+        screen_width = self.winfo_screenwidth()
+
+        widget_height = 720
+        widget_width = 1080
+
+        pos_height = int(screen_height // 2 - widget_height // 2)
+        pos_width = int(screen_width // 2 - widget_width // 2)
+
+        self.geometry(
+            f"{widget_width}x{widget_height}+{pos_width}+{pos_height}")
+
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(3, weight=1)
         self.resizable(False, False)
@@ -533,14 +579,14 @@ class App(customtkinter.CTk):
         self.listx.grid(
             row=3, column=1, padx=10, pady=10, sticky="nsw")
 
-        self.my_frame = MyFrame(master=self)
+        self.setting_frame = SettingFrame(master=self)
 
     def setting(self):
-        if self.my_frame.grid_info() == {}:
-            self.my_frame.grid(row=1, column=0, padx=(10, 0),
-                               pady=10, sticky="nsw", rowspan=3)
+        if self.setting_frame.grid_info() == {}:
+            self.setting_frame.grid(row=1, column=0, padx=(10, 0),
+                                    pady=10, sticky="nsw", rowspan=3)
         else:
-            self.my_frame.grid_forget()
+            self.setting_frame.grid_forget()
 
 
 app = App()
