@@ -219,17 +219,27 @@ class ListFrame(customtkinter.CTkFrame):
         self.renameBtn.grid(row=0, column=1, padx=15, pady=15, sticky="w")
         # create move button
         self.moveBtn = customtkinter.CTkButton(
-            self, text="Move", command=self.move, state="disabled", fg_color="#242424")
+            self, text="Spread", command=self.move, state="disabled", fg_color="#242424")
         self.moveBtn.grid(row=0, column=2, padx=15, pady=15, sticky="w")
         # create total text
         self.total_text = customtkinter.CTkLabel(
             self, text="Found : 0 , Changed : 0")
         self.total_text.grid(row=2, column=0, padx=15,
-                             pady=15, sticky="w", columnspan=2)
+                             pady=15, sticky="w")
         # create apply button
         self.applyBtn = customtkinter.CTkButton(
             self, text="Apply", command=self.apply, state="disabled", fg_color="#242424")
-        self.applyBtn.grid(row=2, column=2, padx=15, pady=15, sticky="w")
+        self.applyBtn.grid(row=2, column=2, padx=10, pady=10, sticky="w")
+        # create revert button
+        self.revertBtn = customtkinter.CTkButton(
+            self, text="Revert", command=self.revert, state="disabled", fg_color="#242424")
+        self.revertBtn.grid(row=2, column=1, padx=10, pady=10, sticky="w")
+
+    def revert(self):
+        # load from original list
+        self.Load()
+        # disable revert after click
+        self.revertBtn.configure(state="disabled")
 
     def rename(self):
         self.disableBtn(True)
@@ -288,7 +298,7 @@ class ListFrame(customtkinter.CTkFrame):
 
     def dataChanged(self):
         # get all items from list
-        _from = LoadData().get()
+        _from = LoadData().get_names()
         # changes items from list
         _to = self.scrollable_checkbox_frame.get_all_items()
         _do = []
@@ -299,17 +309,6 @@ class ListFrame(customtkinter.CTkFrame):
         return _do
 
     def apply(self):
-
-        # # get all items from list
-        # _from = LoadData().get()
-        # # changes items from list
-        # _to = self.scrollable_checkbox_frame.get_all_items()
-        # _do = []
-        # for x in range(len(_from)):
-        #     # if something changed
-        #     if _from[x] != _to[x]:
-        #         _do.append([_from[x], _to[x]])
-        # # clear list box
         total_changes = len(self.dataChanged())
         if (total_changes != 0):
             # show confirmation dialog
@@ -329,7 +328,30 @@ class ListFrame(customtkinter.CTkFrame):
             BoxFrame.warning("Warning", "No changes detected")
 
     def move(self):
-        pass
+        self.disableBtn(True)
+        master_dir = FileOP.readConfig("master")
+        _do = []
+        try:
+            for x in self.scrollable_checkbox_frame.get_checked_items():
+                for code in LoadData().get_codes():
+                    compare = re.search(
+                        r"\b({}.\d+)".format(code), x, re.IGNORECASE)
+                    if compare != None:
+                        _do.append([x, code, compare.group()])
+                        continue
+
+            for x in _do:
+                # head for dir and tail for filename
+                head, tail = os.path.split(x[0])
+                new_path = os.path.normpath(
+                    master_dir+"/"+x[1]+"/"+x[2]+"/"+tail)
+                self.scrollable_checkbox_frame.edit_item(
+                    x[0], new_path)
+                self.update_idletasks()
+        except Exception as e:
+            BoxFrame.error("Error", f"Failed to move file(s) \n {e}")
+        self.UpdateTotal()
+        self.disableBtn(False)
 
     def checkbox_event(self):
         # check if select all is checked, if so select all items
@@ -347,6 +369,10 @@ class ListFrame(customtkinter.CTkFrame):
 
     def disableBtn(self, btn):
         # disable buttons if True, enable if False
+        if (len(self.dataChanged()) == 0):
+            self.revertBtn.configure(state="disabled")
+        else:
+            self.revertBtn.configure(state="normal")
         if btn:
             self.renameBtn.configure(state="disabled")
             self.moveBtn.configure(state="disabled")
@@ -369,7 +395,8 @@ class ListFrame(customtkinter.CTkFrame):
 
     def Load(self):
         self.clear()
-        for x in LoadData().get():
+        datas = LoadData().get_names()
+        for x in datas:
             self.scrollable_checkbox_frame.add_item(x)
         self.UpdateTotal()
 
@@ -384,13 +411,19 @@ class LoadData():
     def __init__(self):
         self.data = []
         for i in FileOP.readFile("d_list"):
-            self.data.append(i[1])
+            self.data.append(i)
 
     def add(self, item):
         self.data.append(item)
 
     def get(self):
         return self.data
+
+    def get_names(self):
+        return [x[1] for x in self.data]
+
+    def get_codes(self):
+        return [x[0] for x in self.data]
 
     def clear(self):
         self.data = []
@@ -410,7 +443,7 @@ class ScanSceneFrame(customtkinter.CTkFrame):
         self.progress_bar = customtkinter.CTkProgressBar(
             self, orientation="horizontal")
         self.progress_bar.grid(
-            row=1, column=3, padx=10, pady=10, sticky="s")
+            row=1, column=3, padx=10, pady=10, sticky="w")
         self.progress_bar.set(0)
 
         self.button = customtkinter.CTkButton(
@@ -470,7 +503,8 @@ class ScanSceneFrame(customtkinter.CTkFrame):
 
     def Update(self, range, idx, folder):
         # update folder text
-        self.folder_txt.configure(text="Current working on : "+folder)
+        folder = f"{folder[:15]}..."
+        self.folder_txt.configure(text="Working on : "+folder)
         # the maximum value of progress bar is 1 so divide to maximum range
         iter_step = 0
         if range != 0:
@@ -569,7 +603,13 @@ class SettingFrame(customtkinter.CTkFrame):
 
     def masterBtn(self):
         # FileOP.writeConfig("master", dialog.get_input())
-        BoxFrame.show("Master Folder", "Please select your master folder")
+        # Open folder dialog
+        path = FileOP.OpenFolder()
+        if (os.path.isdir(path)):
+            FileOP.writeConfig("master", path)
+            BoxFrame.show("Success", "Master folder has been set")
+        else:
+            BoxFrame.show("Error", "Invalid folder path")
 
     def databaseBtn(self):
         self.master.withdraw()
@@ -604,24 +644,28 @@ class App(customtkinter.CTk):
         self.geometry(
             f"{widget_width}x{widget_height}+{pos_width}+{pos_height}")
 
-        self.grid_columnconfigure(1, weight=1)
-        self.grid_rowconfigure((0, 1, 2, 3), weight=1)
+        self.grid_columnconfigure((1), weight=1)
+        self.grid_rowconfigure((0, 1, 2, 3, 4), weight=1)
 
         self.btn = customtkinter.CTkButton(
             self, text="Setting", command=self.setting, fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"))
         self.btn.grid(row=0, column=1, padx=10, pady=10, sticky="w")
+        self.masterVal = FileOP.readConfig("master")
+        self.masterLabel = customtkinter.CTkLabel(
+            self, text=self.masterVal, fg_color=("lightgrey", "#242424"))
+        self.masterLabel.grid(row=1, column=1, padx=10, pady=10, sticky="w")
 
         self.browse_frame = BrowseFrame(self)
         self.browse_frame.grid(
-            row=1, column=1, padx=10, pady=10, sticky="nsw")
+            row=2, column=1, padx=10, pady=10, sticky="nsw")
 
         self.scanScene = ScanSceneFrame(self)
         self.scanScene.grid(
-            row=2, column=1, padx=10, pady=10, sticky="nsw")
+            row=3, column=1, padx=10, pady=10, sticky="nsw")
 
         self.listx = ListFrame(self)
         self.listx.grid(
-            row=3, column=1, padx=10, pady=10, sticky="nsw")
+            row=4, column=1, padx=10, pady=10, sticky="nsw")
 
         self.setting_frame = SettingFrame(master=self)
 
