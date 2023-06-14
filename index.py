@@ -77,6 +77,7 @@ class FileOP:
                             # normalize to path and write to res
                             res = os.path.normpath(os.path.join(r, file))
                             addListFunc(res)
+            time.sleep(1)
         else:
             lis = os.listdir(dir)
             for file in lis:
@@ -89,7 +90,7 @@ class FileOP:
                             # normalize to path and write to res
                             res = os.path.normpath(os.path.join(dir, file))
                             addListFunc(res)
-        updateFunc(0, 0, "Done")
+        # updateFunc(0, 0, "Done")
 
     def Detector(file):
         studio = FileOP.readFile('d_maker_list')
@@ -209,20 +210,25 @@ class ListFrame(customtkinter.CTkFrame):
         self.checkbox.grid(row=0, column=0, padx=15, pady=15, sticky="w")
         # create scrollable checkbox frame
         self.scrollable_checkbox_frame = ScrollableCheckBoxFrame(
-            self, width=350, height=400, command=self.checkbox_frame_event)
+            self, width=350, height=250, command=self.checkbox_frame_event)
         self.scrollable_checkbox_frame.grid(
             row=1, column=0, padx=15, pady=0, sticky="nsew", columnspan=3)
         # create rename button
         self.renameBtn = customtkinter.CTkButton(
-            self, text="Rename", command=self.rename, state="disabled")
+            self, text="Rename", command=self.rename, state="disabled", fg_color="#242424")
         self.renameBtn.grid(row=0, column=1, padx=15, pady=15, sticky="w")
         # create move button
         self.moveBtn = customtkinter.CTkButton(
-            self, text="Move", command=self.move, state="disabled")
+            self, text="Move", command=self.move, state="disabled", fg_color="#242424")
         self.moveBtn.grid(row=0, column=2, padx=15, pady=15, sticky="w")
+        # create total text
+        self.total_text = customtkinter.CTkLabel(
+            self, text="Found : 0 , Changed : 0")
+        self.total_text.grid(row=2, column=0, padx=15,
+                             pady=15, sticky="w", columnspan=2)
         # create apply button
         self.applyBtn = customtkinter.CTkButton(
-            self, text="Apply", command=self.apply, state="disabled")
+            self, text="Apply", command=self.apply, state="disabled", fg_color="#242424")
         self.applyBtn.grid(row=2, column=2, padx=15, pady=15, sticky="w")
 
     def rename(self):
@@ -277,10 +283,10 @@ class ListFrame(customtkinter.CTkFrame):
 
         except Exception as e:
             print(e)
+        self.UpdateTotal()
         self.disableBtn(False)
 
-    def apply(self):
-
+    def dataChanged(self):
         # get all items from list
         _from = LoadData().get()
         # changes items from list
@@ -290,13 +296,27 @@ class ListFrame(customtkinter.CTkFrame):
             # if something changed
             if _from[x] != _to[x]:
                 _do.append([_from[x], _to[x]])
-        # clear list box
-        total_changes = len(_do)
+        return _do
+
+    def apply(self):
+
+        # # get all items from list
+        # _from = LoadData().get()
+        # # changes items from list
+        # _to = self.scrollable_checkbox_frame.get_all_items()
+        # _do = []
+        # for x in range(len(_from)):
+        #     # if something changed
+        #     if _from[x] != _to[x]:
+        #         _do.append([_from[x], _to[x]])
+        # # clear list box
+        total_changes = len(self.dataChanged())
         if (total_changes != 0):
             # show confirmation dialog
             msg_box = BoxFrame.question(
                 "Confirmation", f"Apply changes to {total_changes} item(s) ? (Can't be undone)")
             if msg_box == 'yes':
+                _do = self.dataChanged()
                 for x in range(total_changes):
                     FileOP.Mover(_do[x][0], _do[x][1])
                 time.sleep(0.5)
@@ -351,6 +371,13 @@ class ListFrame(customtkinter.CTkFrame):
         self.clear()
         for x in LoadData().get():
             self.scrollable_checkbox_frame.add_item(x)
+        self.UpdateTotal()
+
+    def UpdateTotal(self):
+        self.found = len(self.scrollable_checkbox_frame.get_all_items())
+        self.changed = len(self.dataChanged())
+        self.total_text.configure(
+            text=f"Found : {self.found} , Changed : {self.changed}")
 
 
 class LoadData():
@@ -378,24 +405,34 @@ class ScanSceneFrame(customtkinter.CTkFrame):
         super().__init__(master)
 
         self.list = []
-
-        self.progress_bar = ProgressBar(self)
+        self.grid_columnconfigure((0, 1, 2), weight=1)
+        self.grid_rowconfigure((0, 1, 2), weight=1)
+        self.progress_bar = customtkinter.CTkProgressBar(
+            self, orientation="horizontal")
         self.progress_bar.grid(
-            row=0, column=0, padx=10, pady=10, sticky="w")
+            row=1, column=3, padx=10, pady=10, sticky="s")
         self.progress_bar.set(0)
 
         self.button = customtkinter.CTkButton(
-            self, text="Start Scan", command=self.Scan)
-        self.button.grid(row=0, column=2, padx=10,
-                         pady=10, sticky="w")
+            self, text="Start Scan", command=self.Scan, height=10)
+        self.button.grid(row=0, column=0, padx=10,
+                         pady=10, sticky="nsew", rowspan=2)
 
         self.percentage_txt = customtkinter.CTkLabel(
-            self, text="0%", fg_color="transparent")
-        self.percentage_txt.grid(row=0, column=1, padx=10, pady=10, sticky="w")
+            self, text="0%")
+        self.percentage_txt.grid(
+            row=1, column=2, padx=10, pady=10, sticky="w")
 
         self.folder_txt = customtkinter.CTkLabel(
-            self, text="Current working on : -", fg_color="transparent", wraplength=200)
-        self.folder_txt.grid(row=1, column=0, padx=10, pady=10, sticky="w")
+            self, text="Current working on : -")
+        self.folder_txt.grid(row=0, column=2, padx=10,
+                             pady=10, sticky="w", columnspan=2)
+
+        self.isRecursiveSwitchVar = customtkinter.StringVar(value="off")
+        self.isRecursiveSwitch = customtkinter.CTkSwitch(self, text="Recursive Search",
+                                                         variable=self.isRecursiveSwitchVar, onvalue="on", offvalue="off")
+        self.isRecursiveSwitch.grid(
+            row=2, column=0, padx=10, pady=10, sticky="nsew", columnspan=3)
 
     def Scan(self):
         self.list = []
@@ -405,12 +442,17 @@ class ScanSceneFrame(customtkinter.CTkFrame):
             "Confirmation", f"Scan all files in folder {path}?")
         if msg_box == 'yes':
             if (path != None and os.path.isdir(path)):
-                FileOP.ScanFile(path, False, self.Update,
-                                self.Add)
+                if self.isRecursiveSwitchVar.get() == "on":
+                    FileOP.ScanFile(path, True, self.Update,
+                                    self.Add)
+                else:
+                    FileOP.ScanFile(path, False, self.Update,
+                                    self.Add)
                 self.folder_txt.configure(text="Trying to detect AV Movies...")
                 self.update_idletasks()
-                time.sleep(1)
+                time.sleep(0.5)
                 self.Detector()
+                time.sleep(0.5)
                 self.folder_txt.configure(text="Done.")
                 self.master.listx.Load()
             else:
@@ -438,16 +480,15 @@ class ScanSceneFrame(customtkinter.CTkFrame):
         progress_step = idx * iter_step
         # calculate percentage
         percent = progress_step*100
-        self.percentage_txt.configure(text=str(int(percent))+"%")
-        # update progress bar each 15%
-        if (int(percent) % 15 == 0):
+        self.percentage_txt.configure(text=f"{int(percent)}%")
+        # update progress bar each 10%
+        if (int(percent) % 10 == 0):
             self.progress_bar.set(progress_step)
             self.update_idletasks()
         # set progress bar to max to 100%
         if (int(percent) >= 100):
             self.progress_bar.set(100)
             self.update_idletasks()
-            progress_step = 0
 
     def Add(self, value):
         self.list.append(value)
@@ -465,7 +506,7 @@ class BrowseFrame(customtkinter.CTkFrame):
                       pady=10, sticky="w")
         # create browse button
         self.button = customtkinter.CTkButton(
-            self, text="Browse", command=self.find)
+            self, text="Browse", command=self.find, fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"))
         self.button.grid(row=0, column=1, padx=10,
                          pady=10, sticky="w")
 
@@ -505,18 +546,21 @@ class Database(customtkinter.CTkToplevel):
 class SettingFrame(customtkinter.CTkFrame):
     def __init__(self, master):
         super().__init__(master)
-        self.label = customtkinter.CTkLabel(self, text="Setting")
-        self.label.grid(row=0, column=0, padx=10, pady=10, sticky="s")
+        self.grid_columnconfigure(0, weight=1)
+        my_font = customtkinter.CTkFont(weight="bold", size=15)
+        self.label = customtkinter.CTkLabel(
+            self, text="Setting", fg_color=("lightgrey", "#242424"), corner_radius=10, font=my_font)
+        self.label.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
         self.appearance_mode_optionemenu = customtkinter.CTkOptionMenu(self, values=["System", "Dark", "Light"],
                                                                        command=self.change_appearance_mode_event)
         self.appearance_mode_optionemenu.grid(
             row=1, column=0, padx=10, pady=10)
         self.masterBtn = customtkinter.CTkButton(self, text="Master Folder",
-                                                 command=self.masterBtn)
+                                                 command=self.masterBtn, fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"))
         self.masterBtn.grid(row=2, column=0, padx=10, pady=10)
 
         self.databaseBtn = customtkinter.CTkButton(self, text="Database",
-                                                   command=self.databaseBtn)
+                                                   command=self.databaseBtn, fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"))
         self.databaseBtn.grid(row=3, column=0, padx=10, pady=10)
         self.db_windows = None
 
@@ -561,10 +605,10 @@ class App(customtkinter.CTk):
             f"{widget_width}x{widget_height}+{pos_width}+{pos_height}")
 
         self.grid_columnconfigure(1, weight=1)
-        self.grid_rowconfigure(3, weight=1)
-        self.resizable(False, False)
+        self.grid_rowconfigure((0, 1, 2, 3), weight=1)
+
         self.btn = customtkinter.CTkButton(
-            self, text="Setting", command=self.setting)
+            self, text="Setting", command=self.setting, fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"))
         self.btn.grid(row=0, column=1, padx=10, pady=10, sticky="w")
 
         self.browse_frame = BrowseFrame(self)
