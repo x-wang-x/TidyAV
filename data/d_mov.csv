@@ -1,0 +1,184 @@
+ID,Code,Studio_Name,Amateur
+1,200GANA,Unknown,Unknown
+2,345SIMM,Unknown,Unknown
+3,353HEN,Unknown,Unknown
+4,ABP,Prestige,Unknown
+5,ABW,Prestige,Unknown
+6,ADN,Attackers,Unknown
+7,AGAV,Unknown,Unknown
+8,AKA,Unknown,Unknown
+9,AKO,,Unknown
+10,ALB,,Unknown
+11,APAA,Unknown,Unknown
+12,APKH,Unknown,Unknown
+13,APNS,Unknown,Unknown
+14,ATID,Unknown,Unknown
+15,AUKS,Unknown,Unknown
+16,AVOP,Unknown,Unknown
+17,AVSA,Unknown,Unknown
+18,BAA,Bermuda/Mousouzoku,No
+19,BAEM,Unknown,Unknown
+20,BANK,Unknown,Unknown
+21,BBAN,Unknown,Unknown
+22,BDSR,Unknown,Unknown
+23,BEB,Unknown,Unknown
+24,BEB,,Unknown
+25,BF,Unknown,Unknown
+26,BGN,Unknown,Unknown
+27,BINI,,Unknown
+28,BLB,Unknown,Unknown
+29,BLK,Unknown,Unknown
+30,BLOR,Unknown,Unknown
+31,CAWD,,Unknown
+32,CHN,Unknown,Unknown
+33,CJOD,Unknown,Unknown
+34,CRDD,Unknown,Unknown
+35,CSCT,Unknown,Unknown
+36,CWM,,Unknown
+37,DANDY,Unknown,Unknown
+38,DANUHD,,Unknown
+39,DASD,Unknown,Unknown
+40,DFE,Unknown,Unknown
+41,DLDSS,Unknown,Unknown
+42,DOHI,Unknown,Unknown
+43,DPMI,Unknown,Unknown
+44,DTT,Unknown,Unknown
+45,DVAJ,Unknown,Unknown
+46,DVDMS,Unknown,Unknown
+47,EBOD,Unknown,Unknown
+48,EKO,,Unknown
+49,EYAN,,Unknown
+50,FERA,Unknown,Unknown
+51,FSDSS,Unknown,Unknown
+52,GOUL,-,Yes
+53,GTRP,Unknown,Unknown
+54,GVG,Unknown,Unknown
+55,GVH,Unknown,Unknown
+56,GYAN,Unknown,Unknown
+57,HDKA,,Unknown
+58,HERY,YELLOW / Mousouzoku,No
+59,HERY,,Unknown
+60,HIGH,,Unknown
+61,HIKR,Unknown,Unknown
+62,HMN,,Unknown
+63,HND,Unknown,Unknown
+64,HOMA,Unknown,Unknown
+65,HUSR,Unknown,Unknown
+66,HZGD,Unknown,Unknown
+67,IMTT,Unknown,Unknown
+68,IPIT,Unknown,Unknown
+69,IPTD,,Unknown
+70,IPX,Unknown,Unknown
+71,IPZ,Unknown,Unknown
+72,JJDA,Unknown,Unknown
+73,JUFD,Unknown,Unknown
+74,JUFE,Unknown,Unknown
+75,JUL,Unknown,Unknown
+76,JUQ,-,No
+77,JUY,Unknown,Unknown
+78,KBI,Unknown,Unknown
+79,KIR,Unknown,Unknown
+80,KIRD,,Unknown
+81,KIRD,,Unknown
+82,KIRE,Unknown,Unknown
+83,KPB,Unknown,Unknown
+84,KRAY,Unknown,Unknown
+85,KSBJ,Unknown,Unknown
+86,KYMI,Unknown,Unknown
+87,LULU,Unknown,Unknown
+88,LZPL,Unknown,Unknown
+89,MBRBA,Unknown,Unknown
+90,MBYD,Unknown,Unknown
+91,MCDV,Unknown,Unknown
+92,MDYD,Unknown,Unknown
+93,MEYD,Unknown,Unknown
+94,MFC,Unknown,Unknown
+95,MIAA,Unknown,Unknown
+96,MIAD,Unknown,Unknown
+97,MIAE,Unknown,Unknown
+98,MIDD,Unknown,Unknown
+99,MIDE,Unknown,Unknown
+100,MIDV,,Unknown
+101,MIFD,,Unknown
+102,MIGD,Unknown,Unknown
+103,MILK,Unknown,Unknown
+104,MIMK,Unknown,Unknown
+105,MIRD,Unknown,Unknown
+106,MIXS,Unknown,Unknown
+107,MKD,Unknown,Unknown
+108,MKMP,Unknown,Unknown
+109,MMKZ,Unknown,Unknown
+110,MMNA,Unknown,Unknown
+111,MOND,Unknown,Unknown
+112,MSFH,Unknown,Unknown
+113,MVS,,Unknown
+114,MVSD,Unknown,Unknown
+115,MXBD,,Unknown
+116,MXGS,Unknown,Unknown
+117,NACR,Unknown,Unknown
+118,NGOD,Unknown,Unknown
+119,NHDTB,Unknown,Unknown
+120,NITR,Unknown,Unknown
+121,NNPJ,Unknown,Unknown
+122,NSPS,Unknown,Unknown
+123,NTRD,Unknown,Unknown
+124,OKSN,Unknown,Unknown
+125,ONED,,Unknown
+126,ONSG,Unknown,Unknown
+127,PFES,Unknown,Unknown
+128,PGD,Unknown,Unknown
+129,PPD,Unknown,Unknown
+130,PPPD,Unknown,Unknown
+131,PPPE,,Unknown
+132,PRED,Unknown,Unknown
+133,PREN,Unknown,Unknown
+134,PRTD,Unknown,Unknown
+135,RBD,Unknown,Unknown
+136,RCTD,,Unknown
+137,REBD,Unknown,Unknown
+138,ROE,,Unknown
+139,ROYD,Royal,No
+140,SDDE,SOD Create,No
+141,SDHS,SOD Create,Yes
+142,SDMU,SOD Create,No
+143,SDNM,SOD Create,No
+144,SDNT,SOD Create,No
+145,SDSI,SOD Create,No
+146,SERO,Alice JAPAN,Yes
+147,SFLB,Shuffle,No
+148,SGM,Global Media Entertainment,No
+149,SHKD,Attackers,No
+150,SIM,Prestige,No
+151,SNIS,S1 NO.1 STYLE,No
+152,SOE,S1 NO.1 STYLE,No
+153,SORA,Yama to Sora,Yes
+154,SPRD,Takara Eizo,No
+155,SSIS,S1 NO.1 STYLE,No
+156,SSNI,S1 NO.1 STYLE,No
+157,SSPD,Attackers,No
+158,STAR,SOD Create,No
+159,STARS,SOD Create,No
+160,STKO,SOD Create,Yes
+161,SUPA,Skyu Shiroto,No
+162,SUPD,Idea Pocket,No
+163,TAMO,Orga,No
+164,TEAM,teamZERO,No
+165,TEK,MUTEKI,No
+166,TEM,Prestige,No
+167,URE,Admiral Kurobune,Yes
+168,VEMA,VENUS,No
+169,VENU,VENUS,No
+170,VENX,VENUS,No
+171,WAAA,Wanz Factory,No
+172,WANZ,Wanz Factory,No
+173,WO,WildOne,No
+174,WSS,Waap Entertainment,No
+175,XVSR,Max A,No
+176,YMDD,Momotaro Eizo,No
+177,YRYR,Takara Eizo,No
+178,YSN,Non,No
+179,YST,Komyo,No
+180,ZKDX,itsuroku Shuppan,No
+181,ZMAR,Planet Plus,No
+182,ZSD,Jitsuroku Shuppan,No
+183,IMOTA,Unknown,Yes
