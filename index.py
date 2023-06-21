@@ -1,6 +1,6 @@
 import customtkinter
-import FileOperationClass as FileOP
-from FrameClass import *
+import app.Operation.FileOperationClass as FileOP
+import app as apps
 
 
 class App(customtkinter.CTk):
@@ -33,19 +33,19 @@ class App(customtkinter.CTk):
             self, text=self.masterVal, fg_color=("lightgrey", "#242424"))
         self.masterLabel.grid(row=1, column=1, padx=10, pady=10, sticky="w")
 
-        self.browse_frame = BrowseFrame(self)
+        self.browse_frame = apps.BrowseFrame(self)
         self.browse_frame.grid(
             row=2, column=1, padx=10, pady=10, sticky="nsw")
 
-        self.scanScene = ScanSceneFrame(self)
+        self.scanScene = apps.ScanFrame(self)
         self.scanScene.grid(
             row=3, column=1, padx=10, pady=10, sticky="nsw")
 
-        self.listx = ListFrame(self)
+        self.listx = apps.ListFrame(self)
         self.listx.grid(
             row=4, column=1, padx=10, pady=10, sticky="nsw")
 
-        self.setting_frame = SettingFrame(master=self)
+        self.setting_frame = apps.SettingFrame(master=self)
 
     def setting(self):
         if self.setting_frame.grid_info() == {}:
@@ -56,8 +56,8 @@ class App(customtkinter.CTk):
 
 
 if __name__ == "__main__":
-    app = App()
-    app.mainloop()
+    home = App()
+    home.mainloop()
 
 # def test():
 #     fromx = r"C:\Users\fjriw\Videos\Ashi Garcia.zip"

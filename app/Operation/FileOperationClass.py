@@ -4,6 +4,8 @@ import csv
 import pathlib
 import json
 import re
+import time
+
 config_file = "config.txt"
 csv_file = ""
 
