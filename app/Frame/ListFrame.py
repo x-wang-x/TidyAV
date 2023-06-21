@@ -43,6 +43,9 @@ class Display(customtkinter.CTkFrame):
             self, text="Revert", command=self.revert, state="disabled", fg_color="#242424")
         self.revertBtn.grid(row=2, column=1, padx=10, pady=10, sticky="w")
 
+    def addLog(self, log):
+        self.master.log.add_log(log)
+
     def revert(self):
         # load from original list
         self.Load()
@@ -129,6 +132,8 @@ class Display(customtkinter.CTkFrame):
             if msg_box == 'yes':
                 _do = self.dataChanged()
                 for x in range(total_changes):
+                    self.addLog(
+                        f"Moving {_do[x][0]} to {_do[x][1]}")
                     FileOP.Mover(_do[x][0], _do[x][1])
                 time.sleep(0.5)
                 BoxFrame.show("Success", "Changes applied")

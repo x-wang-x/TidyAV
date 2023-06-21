@@ -22,12 +22,13 @@ class App(customtkinter.CTk):
         self.geometry(
             f"{widget_width}x{widget_height}+{pos_width}+{pos_height}")
 
-        self.grid_columnconfigure((1), weight=1)
+        self.grid_columnconfigure(1, weight=1)
+        self.grid_columnconfigure(2, weight=2)
         self.grid_rowconfigure((0, 1, 2, 3, 4), weight=1)
 
         self.btn = customtkinter.CTkButton(
             self, text="Setting", command=self.setting, fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"))
-        self.btn.grid(row=0, column=1, padx=10, pady=10, sticky="w")
+        self.btn.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
         self.masterVal = FileOP.readConfig("master")
         self.masterLabel = customtkinter.CTkLabel(
             self, text=self.masterVal, fg_color=("lightgrey", "#242424"))
@@ -35,17 +36,21 @@ class App(customtkinter.CTk):
 
         self.browse_frame = apps.BrowseFrame(self)
         self.browse_frame.grid(
-            row=2, column=1, padx=10, pady=10, sticky="nsw")
+            row=2, column=1, padx=10, pady=10, sticky="nsew")
 
         self.scanScene = apps.ScanFrame(self)
         self.scanScene.grid(
-            row=3, column=1, padx=10, pady=10, sticky="nsw")
+            row=3, column=1, padx=10, pady=10, sticky="nsew")
 
         self.listx = apps.ListFrame(self)
         self.listx.grid(
-            row=4, column=1, padx=10, pady=10, sticky="nsw")
+            row=4, column=1, padx=10, pady=10, sticky="nsew")
 
         self.setting_frame = apps.SettingFrame(master=self)
+
+        self.log = apps.LogFrame(self)
+        self.log.grid(
+            row=0, column=2, sticky="nsew", rowspan=5)
 
     def setting(self):
         if self.setting_frame.grid_info() == {}:

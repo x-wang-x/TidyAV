@@ -30,14 +30,18 @@ class Display(customtkinter.CTkFrame):
     def change_appearance_mode_event(self, new_appearance_mode: str):
         customtkinter.set_appearance_mode(new_appearance_mode)
 
+    def addLog(self, log):
+        self.master.log.add_log(log)
+
     def masterBtn(self):
-        # FileOP.writeConfig("master", dialog.get_input())
         # Open folder dialog
         path = fd.askdirectory()
         if (os.path.isdir(path)):
             FileOP.writeConfig("master", path)
+            self.addLog(f"Master folder has been set to {path}")
             BoxFrame.show("Success", "Master folder has been set")
         else:
+            self.addLog(f"Invalid folder path {path}")
             BoxFrame.show("Error", "Invalid folder path")
 
     def databaseBtn(self):

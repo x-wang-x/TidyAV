@@ -6,3 +6,4 @@ BrowseFrame = Frame.BrowseFrame.Display
 SettingFrame = Frame.SettingFrame.Display
 ListFrame = Frame.ListFrame.Display
 ScanFrame = Frame.ScanFrame.Display
+LogFrame = Frame.LogFrame.Main

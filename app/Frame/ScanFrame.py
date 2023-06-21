@@ -4,6 +4,7 @@ import os
 import json
 from . import BoxFrame
 import time
+from . import LogFrame
 
 
 class Display(customtkinter.CTkFrame):
@@ -23,7 +24,7 @@ class Display(customtkinter.CTkFrame):
         self.button = customtkinter.CTkButton(
             self, text="Start Scan", command=self.Scan, height=10)
         self.button.grid(row=0, column=0, padx=10,
-                         pady=10, sticky="nsew", rowspan=2)
+                         pady=10, sticky="wns", rowspan=2)
 
         self.percentage_txt = customtkinter.CTkLabel(
             self, text="0%")
@@ -41,6 +42,9 @@ class Display(customtkinter.CTkFrame):
         self.isRecursiveSwitch.grid(
             row=2, column=0, padx=10, pady=10, sticky="nsew", columnspan=3)
 
+    def addLog(self, log):
+        self.master.log.add_log(log)
+
     def Scan(self):
         self.list = []
         FileOP.deleteFile("d_list")
@@ -50,20 +54,29 @@ class Display(customtkinter.CTkFrame):
         if msg_box == 'yes':
             if (path != None and os.path.isdir(path)):
                 if self.isRecursiveSwitchVar.get() == "on":
-                    print("Rec")
+                    self.addLog("Start recursive scan path : "+path)
                     FileOP.ScanFile(path, True, self.Update,
                                     self.Add)
                 else:
+                    self.addLog("Start scan path : "+path)
                     FileOP.ScanFile(path, False, self.Update,
                                     self.Add)
                 self.folder_txt.configure(text="Trying to detect AV Movies...")
                 self.update_idletasks()
+
+                self.addLog("Start detect AV Movies...")
+
                 time.sleep(0.5)
                 self.Detector()
                 time.sleep(0.5)
                 self.folder_txt.configure(text="Done.")
+
                 self.master.listx.Load()
+
+                self.addLog(
+                    "Done. \n"+json.dumps(self.master.listx.scrollable_checkbox_frame.get_all_items()))
             else:
+                self.addLog("Invalid path : "+path)
                 BoxFrame.error("Error", "Invalid path")
                 return
 
