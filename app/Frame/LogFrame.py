@@ -20,7 +20,7 @@ class Main(customtkinter.CTkFrame):
         self.textbox.insert(customtkinter.END, now)
 
         self.button = customtkinter.CTkButton(
-            self, text="Clear", command=self.add_log, fg_color="transparent", border_width=1, text_color=("gray10", "#DCE4EE"))
+            self, text="Clear", command=self.clear, fg_color="transparent", border_width=1, text_color=("gray10", "#DCE4EE"))
         self.button.grid(row=1, column=0, padx=10,
                          pady=10, sticky="e")
 

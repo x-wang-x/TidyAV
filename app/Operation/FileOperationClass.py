@@ -181,7 +181,6 @@ def Mover2(_from, _to, callback=None, buffersize=1024*1024):
             print("File is symlink")
             return
         else:
-            print("Moving file")
             size = _from.stat().st_size
             with open(_from, 'rb') as fsrc:
                 with open(_to, 'wb') as fdst:

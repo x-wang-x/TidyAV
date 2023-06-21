@@ -131,11 +131,19 @@ class Display(customtkinter.CTkFrame):
                 "Confirmation", f"Apply changes to {total_changes} item(s) ? (Can't be undone)")
             if msg_box == 'yes':
                 _do = self.dataChanged()
+                idx = 0
                 for x in range(total_changes):
+                    idx += 1
+                    self.master.scanScene.folder_txt.configure(
+                        text="Moving {} of {}".format(idx, total_changes))
+                    self.update()
                     self.addLog(
                         f"Moving {_do[x][0]} to {_do[x][1]}")
-                    FileOP.Mover(_do[x][0], _do[x][1])
+                    FileOP.Mover2(_do[x][0], _do[x][1],
+                                  callback=self.callbackMove)
                 time.sleep(0.5)
+                self.master.scanScene.folder_txt.configure(
+                    text="Done")
                 BoxFrame.show("Success", "Changes applied")
                 # clear list box
                 self.disableBtn(True)
@@ -143,6 +151,12 @@ class Display(customtkinter.CTkFrame):
 
         else:
             BoxFrame.warning("Warning", "No changes detected")
+
+    def callbackMove(self, added=100, total_added=100, full=100):
+        percent = total_added / full * 100
+        self.master.scanScene.progress_bar.set(percent/100)
+        self.master.scanScene.percentage_txt.configure(text=f"{int(percent)}%")
+        self.update_idletasks()
 
     def move(self):
         self.disableBtn(True)

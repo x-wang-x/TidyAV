@@ -57,6 +57,7 @@ class Display(customtkinter.CTkFrame):
                     self.addLog("Start recursive scan path : "+path)
                     FileOP.ScanFile(path, True, self.Update,
                                     self.Add)
+                    self.update()
                 else:
                     self.addLog("Start scan path : "+path)
                     FileOP.ScanFile(path, False, self.Update,
