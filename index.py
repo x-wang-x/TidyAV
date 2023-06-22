@@ -28,7 +28,8 @@ class App(customtkinter.CTk):
 
         self.btn = customtkinter.CTkButton(
             self, text="Setting", command=self.setting, fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"))
-        self.btn.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
+        self.btn.grid(row=0, column=1, padx=10, pady=10, sticky="w")
+
         self.masterVal = FileOP.readConfig("master")
         self.masterLabel = customtkinter.CTkLabel(
             self, text=self.masterVal, fg_color=("lightgrey", "#242424"))

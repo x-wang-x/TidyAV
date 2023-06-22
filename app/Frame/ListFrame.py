@@ -289,7 +289,7 @@ class ScrollFrame(customtkinter.CTkScrollableFrame):
 class LoadData():
     def __init__(self):
         self.data = []
-        for i in FileOP.readFile("d_list"):
+        for i in FileOP.readFile("data/d_list.json"):
             self.data.append(i)
 
     def add(self, item):

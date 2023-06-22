@@ -40,6 +40,7 @@ class Display(customtkinter.CTkFrame):
             FileOP.writeConfig("master", path)
             self.addLog(f"Master folder has been set to {path}")
             BoxFrame.show("Success", "Master folder has been set")
+            self.master.masterLabel.configure(text=path)
         else:
             self.addLog(f"Invalid folder path {path}")
             BoxFrame.show("Error", "Invalid folder path")

@@ -47,7 +47,7 @@ class Display(customtkinter.CTkFrame):
 
     def Scan(self):
         self.list = []
-        FileOP.deleteFile("d_list")
+        FileOP.deleteFile("data/d_list.json")
         path = FileOP.readConfig("scan")
         msg_box = BoxFrame.question(
             "Confirmation", f"Scan all files in folder {path}?")
@@ -83,12 +83,14 @@ class Display(customtkinter.CTkFrame):
 
     def Detector(self):
         self.result = []
-        item = FileOP.readFile("d_list")
-        for x in item:
-            code = FileOP.Detector(x)
-            if code != None:
-                self.result.append([code, x])
-        FileOP.writeFile('d_list', json.dumps(self.result))
+        item = FileOP.readFile("data/d_list.json")
+        if item not in [None, []]:
+            for x in item:
+                code = FileOP.Detector(x)
+                if code != None:
+                    self.result.append([code, x])
+            print(json.dumps(self.result))
+            FileOP.writeFile('data/d_list.json', json.dumps(self.result), "w")
 
     def Update(self, range, idx, folder):
         # update folder text
@@ -115,4 +117,6 @@ class Display(customtkinter.CTkFrame):
 
     def Add(self, value):
         self.list.append(value)
-        FileOP.writeFile('d_list', json.dumps(self.list))
+        self.update_idletasks()
+        # print(json.dumps(self.list))
+        FileOP.writeFile('data/d_list.json', json.dumps(self.list), "w")

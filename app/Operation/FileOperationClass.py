@@ -10,12 +10,20 @@ config_file = "config.txt"
 csv_file = ""
 
 
-def writeFile(file, data):
+def writeFile(file, data, operation='w'):
+    # print(f'Writing file {file} : {data}')
     try:
-        with open(file, 'w') as f:
-            f.write(data)
+        if os.path.isfile(file):
+            with open(file, operation) as f:
+                f.write(data)
+        else:
+            if os.path.exists(os.path.dirname(file)) == False:
+                os.makedirs(os.path.dirname(file), exist_ok=True)
+            with open(file, operation) as f:
+                f.write(data)
+
     except Exception as e:
-        print('Error writing file : ', e)
+        print(f'Error writing file {file}: {e}')
 
 
 def readFile(file):
@@ -25,7 +33,7 @@ def readFile(file):
         with open(file, 'r') as f:
             return json.load(f)
     except Exception as e:
-        print('Error reading file : ', e)
+        print(f'Error reading file {file}: ', e)
 
 
 def deleteFile(file):
@@ -122,8 +130,7 @@ def ScanFile(dir, recursive, updateFunc, addListFunc):
 
 
 def Detector(file):
-    # studio = readFile('d_maker_list')
-    studio = read_csv('data/d_mov.csv')
+    studio = read_csv('data/d_maker.csv')
     for i in studio:
         # regex to parse code from file name
         compare = re.search(

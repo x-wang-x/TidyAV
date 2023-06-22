@@ -7,7 +7,6 @@ class Main(customtkinter.CTkToplevel):
         super().__init__(*args, **kwargs)
 
         self.maker_db = 'data/d_maker.csv'
-        self.maker_db = 'data/d_mov.csv'
 
         # # create center window
         self.grid_columnconfigure(0, weight=1)
@@ -260,7 +259,9 @@ class DataFrame(customtkinter.CTkScrollableFrame):
                     column=4, pady=(0, 10), padx=5)
         button2.grid(row=len(self.button_list),
                      column=5, pady=(0, 10), padx=5)
+
         self.update()
+
         self.label_list.append([label, label2, label3, label4])
         self.button_list.append([button, button2])
         self.items.append(item)
